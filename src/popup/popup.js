@@ -153,27 +153,30 @@ async function getMessage(tabId, i) {
 }
 
 //Insert messages
+//サイズもランダムにする
+//スピードもランダムにする
 async function insertMessage(message, count) {
   // document.body.style.backgroundColor = "orange";
   var p = document.createElement("p");
+  // var p = document.document.querySelector("#ow3 > div.T4LgNb > div > div:nth-child(10) > div.crqnQb > div:nth-child(2) > div.axUSnc");
+  // var frontbody = document.querySelector("#ow3 > div.T4LgNb > div > div:nth-child(10) > div.crqnQb");
   console.log("going well");
-  // test = document.getElementsByClassName("GDhqjd").length;
-  // console.log(test);
   p.className = "messages";
   p.id = "message" + count;
   count++;
   p.style.color = "white";
   p.style.position = "fixed";
   p.style.whiteSpace = "nowrap";
+  p.style.zIndex = "1001";
   p.style.left = document.documentElement.clientWidth + "px";
   var random = Math.round(
     Math.random() * document.documentElement.clientHeight
   );
   p.style.top = random + "px";
   p.appendChild(document.createTextNode(message));
-  p.innerHTML = message;
+  // p.innerHTML = message;
   document.body.appendChild(p);
-  await gsap.to("#" + p.id, {
+  gsap.to("#" + p.id, {
     duration: 5,
     x: -1 * (document.documentElement.clientWidth + p.clientWidth),
   });
