@@ -1,5 +1,5 @@
-"use strict";
-//Inicialize some variables
+("use strict");
+//Initialize some variables
 let tabId;
 let meetURL = "https://meet.google.com/";
 let numberOfMessage_previous = 0;
@@ -35,6 +35,7 @@ document.querySelector("#toggle").addEventListener("change", async () => {
   }, 3000);
 });
 
+//checkboxオンにしたときにこれまでのメッセージ読む必要ないな
 async function main() {
   const count_block = await returnNumberOfBlocks(tabId);
   const numberOfMessage_object = await returnNumberOfMessages(tabId);
@@ -153,18 +154,17 @@ async function getMessage(tabId, i) {
 }
 
 //Insert messages
-//サイズもランダムにする
 //スピードもランダムにする
 async function insertMessage(message, count) {
-  // document.body.style.backgroundColor = "orange";
   var p = document.createElement("p");
-  // var p = document.document.querySelector("#ow3 > div.T4LgNb > div > div:nth-child(10) > div.crqnQb > div:nth-child(2) > div.axUSnc");
-  // var frontbody = document.querySelector("#ow3 > div.T4LgNb > div > div:nth-child(10) > div.crqnQb");
   console.log("going well");
   p.className = "messages";
   p.id = "message" + count;
-  count++;
   p.style.color = "white";
+  var random = Math.floor(Math.random() * 30) + 16; //16から45の乱数生成
+  p.style.fontSize = random + "px";
+  p.style.fontFamily = "sans-serif";
+  p.style.fontWeight = "bold";
   p.style.position = "fixed";
   p.style.whiteSpace = "nowrap";
   p.style.zIndex = "1001";
@@ -174,20 +174,48 @@ async function insertMessage(message, count) {
   );
   p.style.top = random + "px";
   p.appendChild(document.createTextNode(message));
-  // p.innerHTML = message;
+  console.log("going well2");
   document.body.appendChild(p);
-  gsap.to("#" + p.id, {
-    duration: 5,
-    x: -1 * (document.documentElement.clientWidth + p.clientWidth),
-  });
-
-  p.parentNode.removeChild(p);
 }
 
 async function executeInsertion(tabId, message, count) {
   return new Promise((resolve, reject) => {
     chrome.scripting.executeScript(
       { target: { tabId: tabId }, func: insertMessage, args: [message, count] },
+      (results) => {
+        if (results[0] === null) {
+          reject(new Error("Failed to insert messages."));
+        } else {
+          resolve(results[0]);
+        }
+      }
+    );
+  });
+}
+
+async function animateMessages(count) {
+  var p = document.querySelector("#message" + count);
+  p.animate(
+    [
+      // keyframes
+      { transform: "translateX(100vw)" },
+      { transform: "translateX(-150vw)" },
+    ],
+    {
+      // timing options
+      duration: 10000, //ここをランダムにする
+      iterations: Infinity,
+    }
+  );
+  setTimeout(function () {
+    p.parentNode.removeChild(p);
+  }, 10000);
+}
+
+async function executeAnimation(tabId, count) {
+  return new Promise((resolve, reject) => {
+    chrome.scripting.executeScript(
+      { target: { tabId: tabId }, func: animateMessages, args: [count] },
       (results) => {
         if (results[0] === null) {
           reject(new Error("Failed to insert messages."));
@@ -210,8 +238,10 @@ async function getNewMessage(count_block, tabId, count) {
       const get_message = await getMessage(tabId, message_execute_count);
       const message = get_message.result;
       await executeInsertion(tabId, message, count);
+      await executeAnimation(tabId, count);
       console.log(message);
       message_execute_count++;
+      count++;
       j_tmp = j + 1;
     }
     i_tmp = i + 1;
@@ -226,8 +256,10 @@ async function getDiffs(tabId, count) {
     const get_message = await getMessage(tabId, message_execute_count);
     const message = get_message.result;
     await executeInsertion(tabId, message, count);
+    await executeAnimation(tabId, count);
     console.log(message);
     message_execute_count++;
+    count++;
     j_tmp = j + 1;
   }
 }
