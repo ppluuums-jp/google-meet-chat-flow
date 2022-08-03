@@ -10,6 +10,14 @@ let j_tmp = 0;
 let no_message_flag = false;
 let count = 0;
 let toggleFlag;
+let firstFireFlag = true;
+let firstFireAfterFlag = true;
+//ロジック追加
+//toggleオンにしたら後ろでも動くようにstorage使ってやる
+//html書き換え
+//リファクタリング(命名規則統一,関数整理、ファイル分割)
+//テスト
+//storeに向けた準備
 
 //Get a current tab's id
 chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
@@ -19,8 +27,8 @@ chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
     // setErrorMessage("Click on the meet tab.");
     // toggleError(true);
   } else {
-    chrome.storage.local.set({ checkedFlag: true }, function () {});
-    console.log("set");
+    // chrome.storage.local.set({ checkedFlag: true }, function () {});
+    // console.log("set");
   }
 });
 
@@ -35,11 +43,11 @@ document.querySelector("#toggle").addEventListener("change", async () => {
   //Execute every 3 seconds
   let timerId = setInterval(async () => {
     await main();
-    if (true) {
-      document.querySelector("#toggle").checked = true;
-      console.log("passed");
-      console.log(document.querySelector("#toggle").checked);
-    }
+    // if (true) {
+    //   document.querySelector("#toggle").checked = true;
+    //   console.log("passed");
+    //   console.log(document.querySelector("#toggle").checked);
+    // }
     let flag = document.querySelector("#toggle").checked;
     // console.log(flag);
     if (flag == false) {
@@ -54,8 +62,17 @@ async function main() {
   const numberOfMessage_object = await returnNumberOfMessages(tabId);
   const numberOfMessage = numberOfMessage_object.result;
 
+  if (firstFireFlag) {
+    console.log("It's first fire, so just do nothing!");
+    count_block_previous_object = await returnNumberOfBlocks(tabId);
+    count_block_previous = count_block_previous_object.result;
+    console.log(count_block_previous);
+    console.log(count_block);
+    firstFireFlag = false;
+    return;
+  }
   //see if there are diffs of number of messages
-  if (numberOfMessage == 0 && !no_message_flag) {
+  else if (numberOfMessage == 0 && !no_message_flag) {
     // setMessage("No message found.");
     console.log("No message found.");
     no_message_flag = true;
@@ -67,13 +84,25 @@ async function main() {
     }
     //see if there are diffs of number of blocks
     if (count_block_previous == count_block.result) {
-      await getDiffs(tabId, count);
-    } else {
-      await getNewMessage(count_block, tabId, count);
+      await getDiffsNoBlockChanged(tabId);//ブロック数が変わらないとき、つまり前回と同じ人がコメントした時
+      console.log("getDiffsNoBlockChangedが走ったで");
+    } else if (firstFireAfterFlag) {
+      await getFirstMessageAfterFiredBlockChanged(count_block, tabId, numberOfMessage);
+      console.log("getFirstMessageAfterFiredBlockChangedが走ったで");
+      firstFireAfterFlag = false;
+    } else  {
+      await getDiffsBlockChanged(count_block, tabId);//ブロック数が変わったとき、つまり前回とは違う人がコメントした時、だからこれも実際はdiffsなんだよな
+      console.log("getDiffsBlockChangedが走ったで");
     }
     numberOfMessage_previous = numberOfMessage;
   }
 }
+
+// else if (firstFireAfterFlag) {
+//   await getFirstMessageAfterFiredNoBlockChanged(tabId);
+//   console.log("getFirstMessageAfterFiredNoBlockChangedが走ったで");
+//   firstFireAfterFlag = false;
+// } 
 
 //Get a block count that contains names and times, messages
 function getNumberOfBlocks() {
@@ -232,7 +261,7 @@ async function executeAnimation(tabId, count) {
       { target: { tabId: tabId }, func: animateMessages, args: [count] },
       (results) => {
         if (results[0] === null) {
-          reject(new Error("Failed to insert messages."));
+          reject(new Error("Failed to animate messages."));
         } else {
           resolve(results[0]);
         }
@@ -241,32 +270,54 @@ async function executeAnimation(tabId, count) {
   });
 }
 
-//Execute when there are diffs of blocks
-async function getNewMessage(count_block, tabId, count) {
+//Execute when gets first message after the firing
+async function getFirstMessageAfterFiredBlockChanged(count_block, tabId, numberOfMessage) {
   //Count messages to get start point
-  for (let i = i_tmp; i < count_block.result; i++) {
-    const count_message = await returnMessageCount(tabId, i);
+  for (let i = count_block.result ; i < count_block.result + 1; i++) {
+    console.log(i-1);
+    console.log(count_block.result);
+    const count_message = await returnMessageCount(tabId, i - 1);
+    console.log(count_message.result);
 
     //Get messages for each name_times
     for (let j = 0; j < count_message.result; j++) {
-      const get_message = await getMessage(tabId, message_execute_count);
-      const message = get_message.result;
-      await executeInsertion(tabId, message, count);
-      await executeAnimation(tabId, count);
-      console.log(message);
-      message_execute_count++;
-      count++;
-      j_tmp = j + 1;
+      message_execute_count = numberOfMessage - 1;//ここをすべてのメッセージ数-1にしてあげればいいはず
+      console.log(message_execute_count);
+      getMessageForEachNameAndTime(j);
+    }
+    i_tmp = count_block.result;
+  }
+  count_block_previous = count_block.result;
+}
+
+async function getFirstMessageAfterFiredNoBlockChanged() {}
+//一発目のfireで同ブロックの場合も書く
+
+//Execute when there are diffs of blocks
+async function getDiffsBlockChanged(count_block, tabId) {
+  //Count messages to get start point
+  for (let i = i_tmp; i < count_block.result; i++) {
+    const count_message = await returnMessageCount(tabId, i);
+    console.log(i_tmp);
+
+    //Get messages for each name_times
+    for (let j = 0; j < count_message.result; j++) {
+      getMessageForEachNameAndTime(j);
     }
     i_tmp = i + 1;
   }
   count_block_previous = count_block.result;
 }
 
-async function getDiffs(tabId, count) {
+async function getDiffsNoBlockChanged(tabId) {
   const count_message = await returnMessageCount(tabId, i_tmp - 1);
 
   for (let j = j_tmp; j < count_message.result; j++) {
+    getMessageForEachNameAndTime(j);
+  }
+}
+
+async function getMessageForEachNameAndTime(j) {
     const get_message = await getMessage(tabId, message_execute_count);
     const message = get_message.result;
     await executeInsertion(tabId, message, count);
@@ -275,5 +326,4 @@ async function getDiffs(tabId, count) {
     message_execute_count++;
     count++;
     j_tmp = j + 1;
-  }
 }
