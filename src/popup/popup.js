@@ -9,18 +9,25 @@ let i_tmp = 0;
 let j_tmp = 0;
 let no_message_flag = false;
 let count = 0;
+let toggleFlag;
 
 //Get a current tab's id
-{
-  chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-    tabId = tabs[0].id;
-    if (tabs[0].url.indexOf(meetURL)) {
-      console.log("Click on the meet tab.");
-      // setErrorMessage("Click on the meet tab.");
-      // toggleError(true);
-    }
-  });
-}
+chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+  tabId = tabs[0].id;
+  if (tabs[0].url.indexOf(meetURL)) {
+    console.log("Click on the meet tab.");
+    // setErrorMessage("Click on the meet tab.");
+    // toggleError(true);
+  } else {
+    chrome.storage.local.set({ checkedFlag: true }, function () {});
+    console.log("set");
+  }
+});
+
+chrome.storage.local.get("checkedFlag", async function (result) {
+  toggleFlag = result.checkedFlag;
+  console.log(toggleFlag);
+});
 
 //Execute when the toggle gets on
 document.querySelector("#toggle").addEventListener("change", async () => {
@@ -28,11 +35,17 @@ document.querySelector("#toggle").addEventListener("change", async () => {
   //Execute every 3 seconds
   let timerId = setInterval(async () => {
     await main();
+    if (true) {
+      document.querySelector("#toggle").checked = true;
+      console.log("passed");
+      console.log(document.querySelector("#toggle").checked);
+    }
     let flag = document.querySelector("#toggle").checked;
+    // console.log(flag);
     if (flag == false) {
       clearInterval(timerId);
     }
-  }, 3000);
+  }, 1000);
 });
 
 //checkboxオンにしたときにこれまでのメッセージ読む必要ないな
@@ -154,28 +167,26 @@ async function getMessage(tabId, i) {
 }
 
 //Insert messages
-//スピードもランダムにする
 async function insertMessage(message, count) {
+  var randomSize = Math.floor(Math.random() * 30) + 16; //16 to 45
+  var randomHight = Math.round(
+    Math.random() * document.documentElement.clientHeight
+  );
   var p = document.createElement("p");
-  console.log("going well");
   p.className = "messages";
   p.id = "message" + count;
   p.style.color = "white";
-  var random = Math.floor(Math.random() * 30) + 16; //16から45の乱数生成
-  p.style.fontSize = random + "px";
+  p.style.fontSize = randomSize + "px";
   p.style.fontFamily = "sans-serif";
   p.style.fontWeight = "bold";
   p.style.position = "fixed";
   p.style.whiteSpace = "nowrap";
   p.style.zIndex = "1001";
   p.style.left = document.documentElement.clientWidth + "px";
-  var random = Math.round(
-    Math.random() * document.documentElement.clientHeight
-  );
-  p.style.top = random + "px";
+  p.style.top = randomHight + "px";
   p.appendChild(document.createTextNode(message));
-  console.log("going well2");
   document.body.appendChild(p);
+  console.log("done with insertion");
 }
 
 async function executeInsertion(tabId, message, count) {
@@ -193,23 +204,26 @@ async function executeInsertion(tabId, message, count) {
   });
 }
 
-async function animateMessages(count) {
+//Animate messages
+function animateMessages(count) {
   var p = document.querySelector("#message" + count);
+  var randomSpeed = Math.floor(Math.random() * 10001) + 10000; //10000 to 20000
   p.animate(
     [
       // keyframes
       { transform: "translateX(100vw)" },
-      { transform: "translateX(-150vw)" },
+      { transform: "translateX(-150vw)" }, //urlとかもちゃんとおしりまで流れるようにしないといけない
     ],
     {
       // timing options
-      duration: 10000, //ここをランダムにする
+      duration: randomSpeed,
       iterations: Infinity,
     }
   );
   setTimeout(function () {
     p.parentNode.removeChild(p);
-  }, 10000);
+  }, randomSpeed);
+  console.log("done with animation");
 }
 
 async function executeAnimation(tabId, count) {
