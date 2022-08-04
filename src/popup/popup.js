@@ -13,14 +13,12 @@ let firstFireFlag = true;
 let firstFireAfterFlag = true;
 let swch = document.getElementById("switch");
 let error = document.getElementById("error");
-let tst = true;
-//ロジック追加
 //switchオンにしたら後ろでも動くようにstorage使ってやる
-//リファクタリング(命名規則統一,関数整理、ファイル分割)
 //エラー処理
 //テスト
 //storeに向けた準備
 //urlとかでもちゃんとおしりまで行くように修正
+//リファクタリング(命名規則統一,関数整理、ファイル分割)
 
 //Get a current tab's id
 chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
@@ -91,14 +89,23 @@ async function main() {
     countBlockPrevious_object = await returnNumberOfBlocks(tabId);
     countBlockPrevious = countBlockPrevious_object.result;
     firstFireFlag = false;
+    numberOfMessagePrevious = numberOfMessage;
     return;
-  } else if (numberOfMessagePrevious < numberOfMessage) {
+  } else if (numberOfMessagePrevious <= numberOfMessage) {
     //Execute
     //see if there are diffs of number of blocks
-    if (tst) {
-      console.log("通ったで");
-      tst = false;
-      return;
+    if (countBlockPrevious == count_block.result) {
+      await getDiffsNoBlockChanged(tabId); //ブロック数が変わらないとき、つまり前回と同じ人がコメントした時
+      console.log("getDiffsNoBlockChangedが走ったで");
+      if(firstFireAfterFlag && numberOfMessagePrevious + 1 == numberOfMessage){
+        await getFirstMessageAfterFiredNoBlockChanged(
+          count_block,
+          numberOfMessage,
+          firstFireAfterFlag
+        );
+        console.log("getFirstMessageAfterFiredNoBlockChangedが走ったで");
+        firstFireAfterFlag = false;
+      }
     } else if (
       firstFireAfterFlag &&
       countBlockPrevious + 1 == count_block.result
@@ -110,17 +117,6 @@ async function main() {
       );
       console.log("getFirstMessageAfterFiredBlockChangedが走ったで");
       firstFireAfterFlag = false;
-    } else if (firstFireAfterFlag && countBlockPrevious == count_block.result) {
-      await getFirstMessageAfterFiredNoBlockChanged(
-        count_block,
-        numberOfMessage,
-        firstFireAfterFlag
-      );
-      console.log("getFirstMessageAfterFiredNoBlockChangedが走ったで");
-      firstFireAfterFlag = false;
-    } else if (countBlockPrevious == count_block.result) {
-      await getDiffsNoBlockChanged(tabId); //ブロック数が変わらないとき、つまり前回と同じ人がコメントした時
-      console.log("getDiffsNoBlockChangedが走ったで");
     } else {
       await getDiffsBlockChanged(count_block, tabId); //ブロック数が変わったとき、つまり前回とは違う人がコメントした時、だからこれも実際はdiffsなんだよな
       console.log("getDiffsBlockChangedが走ったで");
@@ -329,8 +325,6 @@ async function getFirstMessageAfterFiredNoBlockChanged(
     messageExecuteCount = numberOfMessage - 1;
     getMessageForEachNameAndTime(j);
   }
-  iTmp = count_block.result;
-  countBlockPrevious = count_block.result;
 }
 
 //Execute when there are diffs of blocks
