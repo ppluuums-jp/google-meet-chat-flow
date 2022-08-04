@@ -2,25 +2,25 @@
 //Initialize some variables
 let tabId;
 let meetURL = "https://meet.google.com/";
-let numberOfMessage_previous = 0;
-let count_block_previous = 0;
-let message_execute_count = 0;
-let i_tmp = 0;
-let j_tmp = 0;
-let no_message_flag = false;
+let numberOfMessagePrevious = 0;
+let countBlockPrevious = 0;
+let messageExecuteCount = 0;
+let iTmp = 0;
+let jTmp = 0;
 let count = 0;
 let switchFlag;
 let firstFireFlag = true;
 let firstFireAfterFlag = true;
 let swch = document.getElementById("switch");
 let error = document.getElementById("error");
+let tst = true;
 //ロジック追加
 //switchオンにしたら後ろでも動くようにstorage使ってやる
-//html書き換え
 //リファクタリング(命名規則統一,関数整理、ファイル分割)
 //エラー処理
 //テスト
 //storeに向けた準備
+//urlとかでもちゃんとおしりまで行くように修正
 
 //Get a current tab's id
 chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
@@ -73,7 +73,6 @@ document.querySelector("#switch").addEventListener("change", async () => {
     //   console.log(document.querySelector("#switch").checked);
     // }
     let flag = document.querySelector("#switch").checked;
-    // console.log(flag);
     if (flag == false) {
       clearInterval(timerId);
     }
@@ -85,29 +84,25 @@ async function main() {
   const count_block = await returnNumberOfBlocks(tabId);
   const numberOfMessage_object = await returnNumberOfMessages(tabId);
   const numberOfMessage = numberOfMessage_object.result;
+  console.log("２回目通ったで");
 
   if (firstFireFlag) {
     console.log("It's first fire, so just do nothing!");
-    count_block_previous_object = await returnNumberOfBlocks(tabId);
-    count_block_previous = count_block_previous_object.result;
-    console.log(count_block_previous);
-    console.log(count_block);
+    countBlockPrevious_object = await returnNumberOfBlocks(tabId);
+    countBlockPrevious = countBlockPrevious_object.result;
     firstFireFlag = false;
     return;
-  }
-  //see if there are diffs of number of messages
-  else if (numberOfMessage == 0 && !no_message_flag) {
-    // setMessage("No message found.");
-    console.log("No message found.");
-    no_message_flag = true;
-  } else if (numberOfMessage_previous < numberOfMessage) {
+  } else if (numberOfMessagePrevious < numberOfMessage) {
     //Execute
-    if (no_message_flag) {
-      // parent.innerHTML = "";
-      no_message_flag = false;
-    }
     //see if there are diffs of number of blocks
-    if (firstFireAfterFlag && count_block_previous + 1 == count_block.result) {
+    if (tst) {
+      console.log("通ったで");
+      tst = false;
+      return;
+    } else if (
+      firstFireAfterFlag &&
+      countBlockPrevious + 1 == count_block.result
+    ) {
       await getFirstMessageAfterFiredBlockChanged(
         count_block,
         tabId,
@@ -115,10 +110,7 @@ async function main() {
       );
       console.log("getFirstMessageAfterFiredBlockChangedが走ったで");
       firstFireAfterFlag = false;
-    } else if (
-      firstFireAfterFlag &&
-      count_block_previous == count_block.result
-    ) {
+    } else if (firstFireAfterFlag && countBlockPrevious == count_block.result) {
       await getFirstMessageAfterFiredNoBlockChanged(
         count_block,
         numberOfMessage,
@@ -126,14 +118,14 @@ async function main() {
       );
       console.log("getFirstMessageAfterFiredNoBlockChangedが走ったで");
       firstFireAfterFlag = false;
-    } else if (count_block_previous == count_block.result) {
+    } else if (countBlockPrevious == count_block.result) {
       await getDiffsNoBlockChanged(tabId); //ブロック数が変わらないとき、つまり前回と同じ人がコメントした時
       console.log("getDiffsNoBlockChangedが走ったで");
     } else {
       await getDiffsBlockChanged(count_block, tabId); //ブロック数が変わったとき、つまり前回とは違う人がコメントした時、だからこれも実際はdiffsなんだよな
       console.log("getDiffsBlockChangedが走ったで");
     }
-    numberOfMessage_previous = numberOfMessage;
+    numberOfMessagePrevious = numberOfMessage;
   }
 }
 
@@ -318,13 +310,13 @@ async function getFirstMessageAfterFiredBlockChanged(
 
     //Get messages for each name_times
     for (let j = 0; j < 1; j++) {
-      message_execute_count = numberOfMessage - 1; //ここをすべてのメッセージ数-1にしてあげればいいはず
-      console.log(message_execute_count);
+      messageExecuteCount = numberOfMessage - 1; //ここをすべてのメッセージ数-1にしてあげればいいはず
+      console.log(messageExecuteCount);
       getMessageForEachNameAndTime(j);
     }
-    i_tmp = count_block.result;
+    iTmp = count_block.result;
   }
-  count_block_previous = count_block.result;
+  countBlockPrevious = count_block.result;
 }
 
 async function getFirstMessageAfterFiredNoBlockChanged(
@@ -333,46 +325,46 @@ async function getFirstMessageAfterFiredNoBlockChanged(
 ) {
   // const count_message = 1;
 
-  for (let j = j_tmp; j < 1; j++) {
-    message_execute_count = numberOfMessage - 1;
+  for (let j = jTmp; j < 1; j++) {
+    messageExecuteCount = numberOfMessage - 1;
     getMessageForEachNameAndTime(j);
   }
-  i_tmp = count_block.result;
-  count_block_previous = count_block.result;
+  iTmp = count_block.result;
+  countBlockPrevious = count_block.result;
 }
 
 //Execute when there are diffs of blocks
 async function getDiffsBlockChanged(count_block, tabId) {
   //Count messages to get start point
-  for (let i = i_tmp; i < count_block.result; i++) {
+  for (let i = iTmp; i < count_block.result; i++) {
     const count_message = await returnMessageCount(tabId, i);
-    console.log(i_tmp);
+    console.log(iTmp);
 
     //Get messages for each name_times
     for (let j = 0; j < count_message.result; j++) {
       getMessageForEachNameAndTime(j);
     }
-    i_tmp = i + 1;
+    iTmp = i + 1;
   }
-  count_block_previous = count_block.result;
+  countBlockPrevious = count_block.result;
 }
 
 async function getDiffsNoBlockChanged(tabId) {
-  const count_message = await returnMessageCount(tabId, i_tmp - 1);
+  const count_message = await returnMessageCount(tabId, iTmp - 1);
   console.log(count_message.result);
 
-  for (let j = j_tmp; j < count_message.result; j++) {
+  for (let j = jTmp; j < count_message.result; j++) {
     getMessageForEachNameAndTime(j);
   }
 }
 
 async function getMessageForEachNameAndTime(j) {
-  const get_message = await getMessage(tabId, message_execute_count);
+  const get_message = await getMessage(tabId, messageExecuteCount);
   const message = get_message.result;
   await executeInsertion(tabId, message, count);
   await executeAnimation(tabId, count);
   console.log(message);
-  message_execute_count++;
+  messageExecuteCount++;
   count++;
-  j_tmp = j + 1;
+  jTmp = j + 1;
 }
