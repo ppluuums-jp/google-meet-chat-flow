@@ -9,13 +9,16 @@ let i_tmp = 0;
 let j_tmp = 0;
 let no_message_flag = false;
 let count = 0;
-let toggleFlag;
+let switchFlag;
 let firstFireFlag = true;
 let firstFireAfterFlag = true;
+let swch = document.getElementById("switch");
+let error = document.getElementById("error");
 //ロジック追加
-//toggleオンにしたら後ろでも動くようにstorage使ってやる
+//switchオンにしたら後ろでも動くようにstorage使ってやる
 //html書き換え
 //リファクタリング(命名規則統一,関数整理、ファイル分割)
+//エラー処理
 //テスト
 //storeに向けた準備
 
@@ -23,32 +26,53 @@ let firstFireAfterFlag = true;
 chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
   tabId = tabs[0].id;
   if (tabs[0].url.indexOf(meetURL)) {
-    console.log("Click on the meet tab.");
-    // setErrorMessage("Click on the meet tab.");
-    // toggleError(true);
+    setErrorMessage("Click on the meet tab.");
+    switchError(true);
   } else {
     // chrome.storage.local.set({ checkedFlag: true }, function () {});
-    // console.log("set");
+    error.innerHTML = "";
+    switchError(false);
   }
 });
 
+//Set an error message properly
+function setErrorMessage(text) {
+  let error_p = document.createElement("p");
+  error_p.className = "text-danger";
+  error_p.innerHTML = text;
+  error.appendChild(error_p);
+}
+
+//An error handler
+function switchError(display) {
+  if (display) {
+    error.classList.remove("hidden");
+    swch.setAttribute("disabled", "disabled");
+    swch.classList.add("swch-secondary");
+  } else {
+    error.classList.add("hidden");
+    swch.removeAttribute("disabled");
+    swch.classList.add("swch-success");
+  }
+}
+
 chrome.storage.local.get("checkedFlag", async function (result) {
-  toggleFlag = result.checkedFlag;
-  console.log(toggleFlag);
+  switchFlag = result.checkedFlag;
+  console.log(switchFlag);
 });
 
-//Execute when the toggle gets on
-document.querySelector("#toggle").addEventListener("change", async () => {
+//Execute when the switch gets on
+document.querySelector("#switch").addEventListener("change", async () => {
   await main();
   //Execute every 3 seconds
   let timerId = setInterval(async () => {
     await main();
     // if (true) {
-    //   document.querySelector("#toggle").checked = true;
+    //   document.querySelector("#switch").checked = true;
     //   console.log("passed");
-    //   console.log(document.querySelector("#toggle").checked);
+    //   console.log(document.querySelector("#switch").checked);
     // }
-    let flag = document.querySelector("#toggle").checked;
+    let flag = document.querySelector("#switch").checked;
     // console.log(flag);
     if (flag == false) {
       clearInterval(timerId);
@@ -56,7 +80,7 @@ document.querySelector("#toggle").addEventListener("change", async () => {
   }, 1000);
 });
 
-//checkboxオンにしたときにこれまでのメッセージ読む必要ないな
+//トグルを閉じた後もtrueにしようとしてたけど、別のフラグ用意すればいける気がしてきた
 async function main() {
   const count_block = await returnNumberOfBlocks(tabId);
   const numberOfMessage_object = await returnNumberOfMessages(tabId);
@@ -83,26 +107,35 @@ async function main() {
       no_message_flag = false;
     }
     //see if there are diffs of number of blocks
-    if (count_block_previous == count_block.result) {
-      await getDiffsNoBlockChanged(tabId);//ブロック数が変わらないとき、つまり前回と同じ人がコメントした時
-      console.log("getDiffsNoBlockChangedが走ったで");
-    } else if (firstFireAfterFlag) {
-      await getFirstMessageAfterFiredBlockChanged(count_block, tabId, numberOfMessage);
+    if (firstFireAfterFlag && count_block_previous + 1 == count_block.result) {
+      await getFirstMessageAfterFiredBlockChanged(
+        count_block,
+        tabId,
+        numberOfMessage
+      );
       console.log("getFirstMessageAfterFiredBlockChangedが走ったで");
       firstFireAfterFlag = false;
-    } else  {
-      await getDiffsBlockChanged(count_block, tabId);//ブロック数が変わったとき、つまり前回とは違う人がコメントした時、だからこれも実際はdiffsなんだよな
+    } else if (
+      firstFireAfterFlag &&
+      count_block_previous == count_block.result
+    ) {
+      await getFirstMessageAfterFiredNoBlockChanged(
+        count_block,
+        numberOfMessage,
+        firstFireAfterFlag
+      );
+      console.log("getFirstMessageAfterFiredNoBlockChangedが走ったで");
+      firstFireAfterFlag = false;
+    } else if (count_block_previous == count_block.result) {
+      await getDiffsNoBlockChanged(tabId); //ブロック数が変わらないとき、つまり前回と同じ人がコメントした時
+      console.log("getDiffsNoBlockChangedが走ったで");
+    } else {
+      await getDiffsBlockChanged(count_block, tabId); //ブロック数が変わったとき、つまり前回とは違う人がコメントした時、だからこれも実際はdiffsなんだよな
       console.log("getDiffsBlockChangedが走ったで");
     }
     numberOfMessage_previous = numberOfMessage;
   }
 }
-
-// else if (firstFireAfterFlag) {
-//   await getFirstMessageAfterFiredNoBlockChanged(tabId);
-//   console.log("getFirstMessageAfterFiredNoBlockChangedが走ったで");
-//   firstFireAfterFlag = false;
-// } 
 
 //Get a block count that contains names and times, messages
 function getNumberOfBlocks() {
@@ -271,17 +304,21 @@ async function executeAnimation(tabId, count) {
 }
 
 //Execute when gets first message after the firing
-async function getFirstMessageAfterFiredBlockChanged(count_block, tabId, numberOfMessage) {
+async function getFirstMessageAfterFiredBlockChanged(
+  count_block,
+  tabId,
+  numberOfMessage
+) {
   //Count messages to get start point
-  for (let i = count_block.result ; i < count_block.result + 1; i++) {
-    console.log(i-1);
+  for (let i = count_block.result; i < count_block.result + 1; i++) {
+    console.log(i - 1);
     console.log(count_block.result);
-    const count_message = await returnMessageCount(tabId, i - 1);
-    console.log(count_message.result);
+    // const count_message = await returnMessageCount(tabId, i - 1);
+    // console.log(count_message.result);
 
     //Get messages for each name_times
-    for (let j = 0; j < count_message.result; j++) {
-      message_execute_count = numberOfMessage - 1;//ここをすべてのメッセージ数-1にしてあげればいいはず
+    for (let j = 0; j < 1; j++) {
+      message_execute_count = numberOfMessage - 1; //ここをすべてのメッセージ数-1にしてあげればいいはず
       console.log(message_execute_count);
       getMessageForEachNameAndTime(j);
     }
@@ -290,8 +327,19 @@ async function getFirstMessageAfterFiredBlockChanged(count_block, tabId, numberO
   count_block_previous = count_block.result;
 }
 
-async function getFirstMessageAfterFiredNoBlockChanged() {}
-//一発目のfireで同ブロックの場合も書く
+async function getFirstMessageAfterFiredNoBlockChanged(
+  count_block,
+  numberOfMessage
+) {
+  // const count_message = 1;
+
+  for (let j = j_tmp; j < 1; j++) {
+    message_execute_count = numberOfMessage - 1;
+    getMessageForEachNameAndTime(j);
+  }
+  i_tmp = count_block.result;
+  count_block_previous = count_block.result;
+}
 
 //Execute when there are diffs of blocks
 async function getDiffsBlockChanged(count_block, tabId) {
@@ -311,6 +359,7 @@ async function getDiffsBlockChanged(count_block, tabId) {
 
 async function getDiffsNoBlockChanged(tabId) {
   const count_message = await returnMessageCount(tabId, i_tmp - 1);
+  console.log(count_message.result);
 
   for (let j = j_tmp; j < count_message.result; j++) {
     getMessageForEachNameAndTime(j);
@@ -318,12 +367,12 @@ async function getDiffsNoBlockChanged(tabId) {
 }
 
 async function getMessageForEachNameAndTime(j) {
-    const get_message = await getMessage(tabId, message_execute_count);
-    const message = get_message.result;
-    await executeInsertion(tabId, message, count);
-    await executeAnimation(tabId, count);
-    console.log(message);
-    message_execute_count++;
-    count++;
-    j_tmp = j + 1;
+  const get_message = await getMessage(tabId, message_execute_count);
+  const message = get_message.result;
+  await executeInsertion(tabId, message, count);
+  await executeAnimation(tabId, count);
+  console.log(message);
+  message_execute_count++;
+  count++;
+  j_tmp = j + 1;
 }
