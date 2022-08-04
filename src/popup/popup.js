@@ -262,7 +262,7 @@ function animateMessages(count) {
     [
       // keyframes
       { transform: "translateX(100vw)" },
-      { transform: "translateX(-150vw)" }, //urlとかもちゃんとおしりまで流れるようにしないといけない
+      { transform: "translateX(-300vw)" }, 
     ],
     {
       // timing options
