@@ -14,11 +14,10 @@ let firstFireAfterFlag = true;
 let swch = document.getElementById("switch");
 let error = document.getElementById("error");
 //switchオンにしたら後ろでも動くようにstorage使ってやる
-//エラー処理
 //テスト
 //storeに向けた準備
-//urlとかでもちゃんとおしりまで行くように修正
 //リファクタリング(命名規則統一,関数整理、ファイル分割)
+//document.addEventListener('DOMContentLoaded'ベースにできるか？
 
 //Get a current tab's id
 chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
@@ -27,7 +26,7 @@ chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
     setErrorMessage("Click on the meet tab.");
     switchError(true);
   } else {
-    // chrome.storage.local.set({ checkedFlag: true }, function () {});
+    chrome.storage.local.set({ checkedFlag: true }, function () {});
     error.innerHTML = "";
     switchError(false);
   }
@@ -54,23 +53,30 @@ function switchError(display) {
   }
 }
 
-chrome.storage.local.get("checkedFlag", async function (result) {
-  switchFlag = result.checkedFlag;
-  console.log(switchFlag);
-});
+// chrome.storage.local.get("checkedFlag", async function (result) {
+//   switchFlag = result.checkedFlag;
+//   console.log(switchFlag);
+// });
+
+// document.addEventListener("DOMContentLoaded", async () => {
+//   swch.checked = true;
+//   console.log("走ったで");
+// });
+
+// chrome.runtime.getBackgroundPage().window.alert("background.js");
 
 //Execute when the switch gets on
-document.querySelector("#switch").addEventListener("change", async () => {
+swch.addEventListener("change", async () => {
   await main();
   //Execute every 3 seconds
   let timerId = setInterval(async () => {
     await main();
-    // if (true) {
-    //   document.querySelector("#switch").checked = true;
+    // if (swch.checked == true) {
+    //   swch.checked = true;
     //   console.log("passed");
-    //   console.log(document.querySelector("#switch").checked);
+    //   console.log(swch.checked);
     // }
-    let flag = document.querySelector("#switch").checked;
+    let flag = swch.checked;
     if (flag == false) {
       clearInterval(timerId);
     }
@@ -97,7 +103,10 @@ async function main() {
     if (countBlockPrevious == count_block.result) {
       await getDiffsNoBlockChanged(tabId); //ブロック数が変わらないとき、つまり前回と同じ人がコメントした時
       console.log("getDiffsNoBlockChangedが走ったで");
-      if(firstFireAfterFlag && numberOfMessagePrevious + 1 == numberOfMessage){
+      if (
+        firstFireAfterFlag &&
+        numberOfMessagePrevious + 1 == numberOfMessage
+      ) {
         await getFirstMessageAfterFiredNoBlockChanged(
           count_block,
           numberOfMessage,
@@ -257,12 +266,12 @@ async function executeInsertion(tabId, message, count) {
 //Animate messages
 function animateMessages(count) {
   var p = document.querySelector("#message" + count);
-  var randomSpeed = Math.floor(Math.random() * 10001) + 10000; //10000 to 20000
+  var randomSpeed = Math.floor(Math.random() * 10001) + 20000; //20000 to 30000
   p.animate(
     [
       // keyframes
       { transform: "translateX(100vw)" },
-      { transform: "translateX(-300vw)" }, 
+      { transform: "translateX(-300vw)" },
     ],
     {
       // timing options
