@@ -13,6 +13,15 @@
       "https://meet.google.com/*"
     ],
     "action": {
-      "default_popup": "./popup/popup.html"
-    }
+      "default_popup": "popup.html"
+    },
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts":[
+      {
+        "run_at": "document_start",
+        "matches": ["https://meet.google.com/*"],
+        "js": ["content_script.js"]
+      }]
 }

@@ -1,0 +1,149 @@
+body {
+  text-align: center;
+  width: 250px;
+  color: lightskyblue;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+h1 {
+  margin-left: 10px;
+}
+strong {
+  color: #1b92ff;
+}
+.header {
+  color: #1b92ff;
+  display: flex;
+  justify-content: center;
+}
+.header img {
+  width: 60px;
+}
+.separator {
+  width: 100%;
+  border-top: 2px groove white;
+  margin: 5px -5px 5px -3px;
+}
+
+/* smiley */
+.submit-rating {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.smile-rating-container {
+	position: relative;
+	height: 40px;
+}
+.smile-rating-container input {
+	display: none;
+}
+.toggle-rating-pill {
+	position: relative;
+	height: 45px;
+	width: 122px;
+	background: #d0cccd;
+	border-radius: 500px;
+	transition: all 500ms;
+  cursor: pointer;
+}
+.smile-rating-toggle {
+  position: absolute;
+  width: 39px;
+  height: 39px;
+  background-color: white;
+  left: 68px;
+  border-radius: 500px;
+  transition: all 500ms;
+  z-index: 4;
+}
+.rating-eye {
+	position: absolute;
+	height: 10px;
+	width: 6px;
+	background: #d0cccd;
+	border-radius: 500px;
+	top: 12px;
+	z-index: 5;
+	transition: all 440ms;
+  animation: blink-eye 3s infinite;
+}
+.rating-eye-left {
+	left: 75px;
+}
+.rating-eye-right {
+	left: 92px
+}
+.mouth {
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	z-index: 6;
+	border: 4px solid #d0cccd;
+	border-radius: 10%;
+	border-bottom-color: rgba(1,1,1,0);
+	border-right-color: rgba(1,1,1,0);
+	border-left-color: rgba(1,1,1,0);
+	top: 29px;
+  left: 73px;
+	transition: all 500ms;
+}
+
+/* Toggle Changes */
+#fun:checked~.mouth {
+	border: 4px solid #00b9ee;
+	border-bottom-color: rgba(1,1,1,0);
+	border-right-color: rgba(1,1,1,0);
+	border-left-color: rgba(1,1,1,0);
+	top: 10px;
+	left: 150px;
+	transform: rotateX(180deg);
+	border-radius: 100%;
+}
+#fun:checked~.smile-rating-toggle {
+	left: 143px;
+}
+#fun:checked~.rating-eye-left {
+	left: 153px;
+}
+#fun:checked~.rating-eye-right {
+	left: 169px;
+}
+#fun:checked~.toggle-rating-pill {
+	background-color: #00b9ee;
+}
+#fun:checked~.rating-eye {
+	background-color: #00b9ee;
+}
+@keyframes blink-eye {
+	0% {
+    height: 10px;
+    width: 6px;
+    top: 12px;
+	}
+	20% {
+		top: 12px;
+	}
+	40% {
+		top: 12px;
+	}
+	60% {
+		top: 12px;
+	}
+	80% {
+		height: 10px;
+		top: 12px;
+	}
+	90% {
+		height: 10px;
+		top: 12px;
+	}
+	95% {
+		height: 2px;
+		top: 15px;
+	}
+	100% {
+		height: 10px;
+    width: 6px;
+		top: 12px;
+	}
+}
