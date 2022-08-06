@@ -65,22 +65,22 @@ let firstFireAfterFlag = true;
 
 // // chrome.runtime.getBackgroundPage().window.alert("background.js");
 
-//falseからtrueは機能するんだけど、trueからfalseがうまく機能していない
+//falseからtrueは機能するんだけど、trueからfalseがうまく機能していない、boolは通ってるからロジックだわ
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   console.log(message.checked); //checked: false type: "toggle"が入っとる
   console.log(sender.id); //senderにはsender.idが入っとる
   tabId = sender.id;
-  if (message.checked == true) {
+  if (message.checked) {
     await main();
-
-    //Execute every 3 seconds
-    let timerId = setInterval(async () => {
-      await main();
-      if (message.checked == false) {
-        clearInterval(timerId);
-      }
-    }, 1000);
   }
+
+  //Execute every 3 seconds
+  let timerId = setInterval(async () => {
+    await main();
+    if (message.checked === false) {
+      clearInterval(timerId);
+    }
+  }, 1000);
   return true;
 });
 
