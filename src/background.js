@@ -17,7 +17,6 @@ updateState(function (item) {
 
 chrome.runtime.onMessage.addListener(function (request) {
   if (request.type === "toggle") {
-    console.log("やっぱり使われているで");
     sendMsgToCS(request.checked, true);
   }
 });

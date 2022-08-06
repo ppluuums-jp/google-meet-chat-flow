@@ -1,17 +1,18 @@
 body {
   text-align: center;
   width: 250px;
-  color: lightskyblue;
+  color: #4285F4;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: bold;
 }
 h1 {
   margin-left: 10px;
 }
 strong {
-  color: #1b92ff;
+  color: #0F9D58;
 }
 .header {
-  color: #1b92ff;
+  color: #0F9D58;
   display: flex;
   justify-content: center;
 }
@@ -90,7 +91,7 @@ strong {
 
 /* Toggle Changes */
 #fun:checked~.mouth {
-	border: 4px solid #00b9ee;
+	border: 4px solid #DB4437;
 	border-bottom-color: rgba(1,1,1,0);
 	border-right-color: rgba(1,1,1,0);
 	border-left-color: rgba(1,1,1,0);
@@ -109,10 +110,10 @@ strong {
 	left: 169px;
 }
 #fun:checked~.toggle-rating-pill {
-	background-color: #00b9ee;
+	background-color: #DB4437;
 }
 #fun:checked~.rating-eye {
-	background-color: #00b9ee;
+	background-color: #DB4437;
 }
 @keyframes blink-eye {
 	0% {

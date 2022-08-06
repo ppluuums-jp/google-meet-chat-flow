@@ -18,7 +18,8 @@ firstFireAfterFlag = true
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   tabId = sender.id;
   messageChecked = message.checked;
-
+  console.log("status:"+message.checked);
+  console.log("run");
   if(message.checked){
     await main();
   }
@@ -26,37 +27,34 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   let timerId = setInterval(async () => {
       await main(timerId);
   }, 1000);
-
   return true;
 });
 
 async function main(timerId) {
   const count_block = getNumberOfBlocks();
   const numberOfMessage = getNumberOfMessages();
+  console.log("main");
   if (messageChecked === false) {
     clearInterval(timerId);
+    console.log("clear");
   }
   if (firstFireFlag) {
-    console.log("It's first fire, so just do nothing!");
     countBlockPrevious = getNumberOfBlocks;
     firstFireFlag = false;
     numberOfMessagePrevious = numberOfMessage;
     return;
   } else if (numberOfMessagePrevious <= numberOfMessage) {
-    //Execute
     //see if there are diffs of number of blocks
     console.log("hoge");
     if (countBlockPrevious == count_block) {
-      await getDiffsNoBlockChanged(tabId);
+      await getDiffsNoBlockChanged();
       console.log("getDiffsNoBlockChangedが走ったで");
       if (
         firstFireAfterFlag &&
         numberOfMessagePrevious + 1 == numberOfMessage
       ) {
         await getFirstMessageAfterFiredNoBlockChanged(
-          count_block,
-          numberOfMessage,
-          firstFireAfterFlag
+          numberOfMessage
         );
         console.log("getFirstMessageAfterFiredNoBlockChangedが走ったで");
         firstFireAfterFlag = false;
@@ -64,13 +62,12 @@ async function main(timerId) {
     } else if (firstFireAfterFlag && countBlockPrevious + 1 == count_block) {
       await getFirstMessageAfterFiredBlockChanged(
         count_block,
-        tabId,
         numberOfMessage
       );
       console.log("getFirstMessageAfterFiredBlockChangedが走ったで");
       firstFireAfterFlag = false;
     } else {
-      await getDiffsBlockChanged(count_block, tabId); 
+      await getDiffsBlockChanged(count_block); 
       console.log("getDiffsBlockChangedが走ったで");
     }
     numberOfMessagePrevious = numberOfMessage;
@@ -128,7 +125,6 @@ async function insertMessage(message, count) {
   p.style.top = randomHight + "px";
   p.appendChild(document.createTextNode(message));
   document.body.appendChild(p);
-  console.log("done with insertion");
 }
 
 //Animate messages
@@ -150,21 +146,17 @@ async function animateMessages(count) {
   setTimeout(function () {
     p.parentNode.removeChild(p);
   }, randomSpeed);
-  console.log("done with animation");
 }
 
 //Execute when gets first message after the firing
 async function getFirstMessageAfterFiredBlockChanged(
   count_block,
-  tabId,
   numberOfMessage
 ) {
   //Count messages to get start point
   for (let i = count_block; i < count_block + 1; i++) {
     console.log(i - 1);
     console.log(count_block);
-    // const count_message = await returnMessageCount(tabId, i - 1);
-    // console.log(count_message.result);
 
     //Get messages for each name_times
     for (let j = 0; j < 1; j++) {
@@ -177,10 +169,7 @@ async function getFirstMessageAfterFiredBlockChanged(
   countBlockPrevious = count_block;
 }
 
-async function getFirstMessageAfterFiredNoBlockChanged(
-  count_block,
-  numberOfMessage
-) {
+async function getFirstMessageAfterFiredNoBlockChanged(numberOfMessage) {
   // const count_message = 1;
 
   for (let j = jTmp; j < 1; j++) {
@@ -190,7 +179,7 @@ async function getFirstMessageAfterFiredNoBlockChanged(
 }
 
 //Execute when there are diffs of blocks
-async function getDiffsBlockChanged(count_block, tabId) {
+async function getDiffsBlockChanged(count_block) {
   //Count messages to get start point
   for (let i = iTmp; i < count_block; i++) {
     const count_message = getMessageCount(i);
@@ -205,7 +194,7 @@ async function getDiffsBlockChanged(count_block, tabId) {
   countBlockPrevious = count_block;
 }
 
-async function getDiffsNoBlockChanged(tabId) {
+async function getDiffsNoBlockChanged() {
   const count_message = getMessageCount(iTmp - 1);
   console.log(count_message);
 
