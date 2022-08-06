@@ -1,113 +1,41 @@
 ("use strict");
 //Initialize some variables
-let tabId;
-// let meetURL = "https://meet.google.com/";
-let numberOfMessagePrevious = 0;
-let countBlockPrevious = 0;
-let messageExecuteCount = 0;
-let iTmp = 0;
-let jTmp = 0;
-let count = 0;
-let switchFlag;
-let firstFireFlag = true;
-let firstFireAfterFlag = true;
-// let swch = document.getElementById("switch");
-// let error = document.getElementById("error");
-// //switchオンにしたら後ろでも動くようにstorage使ってやる
-// //テスト
+let tabId,
+messageChecked,
+numberOfMessagePrevious = 0,
+countBlockPrevious = 0,
+messageExecuteCount = 0,
+iTmp = 0,
+jTmp = 0,
+count = 0,
+switchFlag,
+firstFireFlag = true,
+firstFireAfterFlag = true
 // //storeに向けた準備
 // //リファクタリング(命名規則統一,関数整理、ファイル分割)
-// //document.addEventListener('DOMContentLoaded'ベースにできるか？
 
-// //Get a current tab's id
-// chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-//   tabId = tabs[0].id;
-//   if (tabs[0].url.indexOf(meetURL)) {
-//     setErrorMessage("Click on the meet tab.");
-//     switchError(true);
-//   } else {
-//     // chrome.storage.local.set({ checkedFlag: true }, function () {});
-//     error.innerHTML = "";
-//     switchError(false);
-//   }
-// });
 
-// //Set an error message properly
-// function setErrorMessage(text) {
-//   let error_p = document.createElement("p");
-//   error_p.className = "text-danger";
-//   error_p.innerHTML = text;
-//   error.appendChild(error_p);
-// }
-
-// //An error handler
-// function switchError(display) {
-//   if (display) {
-//     error.classList.remove("hidden");
-//     swch.setAttribute("disabled", "disabled");
-//     swch.classList.add("swch-secondary");
-//   } else {
-//     error.classList.add("hidden");
-//     swch.removeAttribute("disabled");
-//     swch.classList.add("swch-success");
-//   }
-// }
-
-// // chrome.storage.local.get("checkedFlag", async function (result) {
-// //   switchFlag = result.checkedFlag;
-// //   console.log(switchFlag);
-// // });
-
-// // document.addEventListener("DOMContentLoaded", async () => {
-// //   swch.checked = true;
-// //   console.log("走ったで");
-// // });
-
-// // chrome.runtime.getBackgroundPage().window.alert("background.js");
-
-//falseからtrueは機能するんだけど、trueからfalseがうまく機能していない、boolは通ってるからロジックだわ
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-  console.log(message.checked); //checked: false type: "toggle"が入っとる
-  console.log(sender.id); //senderにはsender.idが入っとる
   tabId = sender.id;
-  if (message.checked) {
+  messageChecked = message.checked;
+
+  if(message.checked){
     await main();
   }
-
   //Execute every 3 seconds
   let timerId = setInterval(async () => {
-    await main();
-    if (message.checked === false) {
-      clearInterval(timerId);
-    }
+      await main(timerId);
   }, 1000);
+
   return true;
 });
 
-// //Execute when the switch gets on
-// swch.addEventListener("change", async () => {
-//   await main();
-//   //Execute every 3 seconds
-//   let timerId = setInterval(async () => {
-//     await main();
-//     // if (swch.checked == true) {
-//     //   swch.checked = true;
-//     //   console.log("passed");
-//     //   console.log(swch.checked);
-//     // }
-//     let flag = swch.checked;
-//     if (flag == false) {
-//       clearInterval(timerId);
-//     }
-//   }, 1000);
-// });
-
-async function main() {
+async function main(timerId) {
   const count_block = getNumberOfBlocks();
   const numberOfMessage = getNumberOfMessages();
-  console.log("２回目通ったで");
-  console.log(count_block);
-  console.log(numberOfMessage);
+  if (messageChecked === false) {
+    clearInterval(timerId);
+  }
   if (firstFireFlag) {
     console.log("It's first fire, so just do nothing!");
     countBlockPrevious = getNumberOfBlocks;
@@ -119,7 +47,7 @@ async function main() {
     //see if there are diffs of number of blocks
     console.log("hoge");
     if (countBlockPrevious == count_block) {
-      await getDiffsNoBlockChanged(tabId); //ブロック数が変わらないとき、つまり前回と同じ人がコメントした時
+      await getDiffsNoBlockChanged(tabId);
       console.log("getDiffsNoBlockChangedが走ったで");
       if (
         firstFireAfterFlag &&
@@ -142,7 +70,7 @@ async function main() {
       console.log("getFirstMessageAfterFiredBlockChangedが走ったで");
       firstFireAfterFlag = false;
     } else {
-      await getDiffsBlockChanged(count_block, tabId); //ブロック数が変わったとき、つまり前回とは違う人がコメントした時、だからこれも実際はdiffsなんだよな
+      await getDiffsBlockChanged(count_block, tabId); 
       console.log("getDiffsBlockChangedが走ったで");
     }
     numberOfMessagePrevious = numberOfMessage;
@@ -154,40 +82,10 @@ function getNumberOfBlocks() {
   return document.getElementsByClassName("GDhqjd").length;
 }
 
-// async function returnNumberOfBlocks(tabId) {
-//   return new Promise((resolve, reject) => {
-//     chrome.scripting.executeScript(
-//       { target: { tabId: tabId }, func: getNumberOfBlocks },
-//       (results) => {
-//         if (results[0] === null) {
-//           reject(new Error("Failed to parse meet."));
-//         } else {
-//           resolve(results[0]);
-//         }
-//       }
-//     );
-//   });
-// }
-
 //Get a number of messages
 function getNumberOfMessages() {
   return document.getElementsByClassName("oIy2qc").length;
 }
-
-// async function returnNumberOfMessages(tabId) {
-//   return new Promise((resolve, reject) => {
-//     chrome.scripting.executeScript(
-//       { target: { tabId: tabId }, func: getNumberOfMessages },
-//       (results) => {
-//         if (results[0] === null) {
-//           reject(new Error("Failed to parse meet."));
-//         } else {
-//           resolve(results[0]);
-//         }
-//       }
-//     );
-//   });
-// }
 
 //Get message counts which are included in each the blocks
 function getMessageCount(i) {
@@ -205,40 +103,10 @@ function getMessageCount(i) {
   return content_content_length;
 }
 
-// async function returnMessageCount(tabId, i) {
-//   return new Promise((resolve, reject) => {
-//     chrome.scripting.executeScript(
-//       { target: { tabId: tabId }, func: getMessageCount, args: [i] },
-//       (results) => {
-//         if (results[0] === null) {
-//           reject(new Error("Failed to parse meet."));
-//         } else {
-//           resolve(results[0]);
-//         }
-//       }
-//     );
-//   });
-// }
-
 //Get Messages from "Google Meet Chat"
 function parseMessage(i) {
   return document.getElementsByClassName("oIy2qc")[i].textContent;
 }
-
-// async function getMessage(tabId, i) {
-//   return new Promise((resolve, reject) => {
-//     chrome.scripting.executeScript(
-//       { target: { tabId: tabId }, func: parseMessage, args: [i] },
-//       (results) => {
-//         if (results[0] === null) {
-//           reject(new Error("Failed to parse meet."));
-//         } else {
-//           resolve(results[0]);
-//         }
-//       }
-//     );
-//   });
-// }
 
 //Insert messages
 async function insertMessage(message, count) {
@@ -263,25 +131,10 @@ async function insertMessage(message, count) {
   console.log("done with insertion");
 }
 
-// async function executeInsertion(tabId, message, count) {
-//   return new Promise((resolve, reject) => {
-//     chrome.scripting.executeScript(
-//       { target: { tabId: tabId }, func: insertMessage, args: [message, count] },
-//       (results) => {
-//         if (results[0] === null) {
-//           reject(new Error("Failed to insert messages."));
-//         } else {
-//           resolve(results[0]);
-//         }
-//       }
-//     );
-//   });
-// }
-
 //Animate messages
 async function animateMessages(count) {
   var p = document.querySelector("#message" + count);
-  var randomSpeed = Math.floor(Math.random() * 10001) + 20000; //20000 to 30000
+  var randomSpeed = Math.floor(Math.random() * 10001) + 20000;
   p.animate(
     [
       // keyframes
@@ -300,21 +153,6 @@ async function animateMessages(count) {
   console.log("done with animation");
 }
 
-// async function executeAnimation(tabId, count) {
-//   return new Promise((resolve, reject) => {
-//     chrome.scripting.executeScript(
-//       { target: { tabId: tabId }, func: animateMessages, args: [count] },
-//       (results) => {
-//         if (results[0] === null) {
-//           reject(new Error("Failed to animate messages."));
-//         } else {
-//           resolve(results[0]);
-//         }
-//       }
-//     );
-//   });
-// }
-
 //Execute when gets first message after the firing
 async function getFirstMessageAfterFiredBlockChanged(
   count_block,
@@ -330,7 +168,7 @@ async function getFirstMessageAfterFiredBlockChanged(
 
     //Get messages for each name_times
     for (let j = 0; j < 1; j++) {
-      messageExecuteCount = numberOfMessage - 1; //ここをすべてのメッセージ数-1にしてあげればいいはず
+      messageExecuteCount = numberOfMessage - 1; 
       console.log(messageExecuteCount);
       getMessageForEachNameAndTime(j);
     }
