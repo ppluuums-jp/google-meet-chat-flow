@@ -11,9 +11,6 @@ count = 0,
 switchFlag,
 firstFireFlag = true,
 firstFireAfterFlag = true
-// //storeに向けた準備
-// //リファクタリング(命名規則統一,関数整理、ファイル分割)
-
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   tabId = sender.id;
