@@ -26,7 +26,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   //Execute every 3 seconds
   let timerId = setInterval(async () => {
     await main(timerId, messageChecked);
-  }, 1000);
+  }, 750);
   return true;
 });
 

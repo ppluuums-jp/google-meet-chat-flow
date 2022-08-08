@@ -1,6 +1,6 @@
 {
     "name": "Google Meet Chat Flow",
-    "description": "nico video like chat flow",
+    "description": "Flow the chat like Niko video",
     "version": "1.0",
     "manifest_version": 3,
     "permissions":[
