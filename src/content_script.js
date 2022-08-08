@@ -15,15 +15,11 @@ let tabId,
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   tabId = sender.id;
   messageChecked = message.checked;
-  console.log("status:" + message.checked);
-  console.log("run");
   await init();
-  console.log("init");
   if (messageChecked == false) {
     firstFireFlag = true;
-    console.log("firstfireflagをtrueに戻したよ");
   }
-  //Execute every 3 seconds
+  //Execute every 0.75 seconds
   let timerId = setInterval(async () => {
     await main(timerId, messageChecked);
   }, 750);
@@ -38,51 +34,33 @@ async function init() {
 }
 
 async function main(timerId, messageChecked) {
-  console.log("ちゃんと読まれてる" + messageChecked);
-  // if (messageChecked) {
-  //   firstFireFlag = false;
-  // } else {
-  //   firstFireFlag = true;
-  // }
   const countBlock = getNumberOfBlocks();
-  console.log("countBlock:" + countBlock);
   const numberOfMessage = getNumberOfMessages();
-  console.log("numberOfMessage:" + numberOfMessage);
-  console.log("numberOfMessagePrevious:" + numberOfMessagePrevious);
-  console.log("main");
   if (messageChecked === false) {
     clearInterval(timerId);
-    console.log("clear");
   }
   if (firstFireFlag) {
     if (numberOfMessagePrevious + 1 == numberOfMessage) {
       firstFireFlag = false;
     }
-    console.log("stay");
     return;
   } else if (numberOfMessagePrevious <= numberOfMessage) {
     //see if there are diffs of number of blocks
-    console.log("hoge");
     if (firstFireAfterFlag && numberOfMessagePrevious + 1 == numberOfMessage) {
       await getFirstMessageAfterFiredNoBlockChanged(
         countBlock,
         numberOfMessage
       );
-      console.log("getFirstMessageAfterFiredNoBlockChangedが走ったで");
       firstFireAfterFlag = false;
     } else if (firstFireAfterFlag && countBlockPrevious + 1 == countBlock) {
       await getFirstMessageAfterFiredBlockChanged(countBlock, numberOfMessage);
-      console.log("getFirstMessageAfterFiredBlockChangedが走ったで");
       firstFireAfterFlag = false;
     } else if (countBlockPrevious == countBlock) {
       iTmp = countBlock;
       //  countBlockPrevious = countBlock;
       await getDiffsNoBlockChanged();
-      console.log("getDiffsNoBlockChangedが走ったで");
-      console.log(firstFireAfterFlag);
     } else {
       await getDiffsBlockChanged(countBlock);
-      console.log("getDiffsBlockChangedが走ったで");
     }
     numberOfMessagePrevious = numberOfMessage;
   }
@@ -169,13 +147,9 @@ async function getFirstMessageAfterFiredBlockChanged(
 ) {
   //Count messages to get start point
   for (let i = countBlock; i < countBlock + 1; i++) {
-    console.log(i - 1);
-    console.log(countBlock);
-
     //Get messages for each name_times
     for (let j = 0; j < 1; j++) {
       messageExecuteCount = numberOfMessage - 1;
-      console.log(messageExecuteCount);
       await getMessageForEachNameAndTime(j);
     }
     iTmp = countBlock;
@@ -187,8 +161,6 @@ async function getFirstMessageAfterFiredNoBlockChanged(
   countBlock,
   numberOfMessage
 ) {
-  // const countMessage = 1;
-
   for (let j = jTmp; j < 1; j++) {
     messageExecuteCount = numberOfMessage - 1;
     await getMessageForEachNameAndTime(j);
@@ -202,7 +174,6 @@ async function getDiffsBlockChanged(countBlock) {
   //Count messages to get start point
   for (let i = iTmp; i < countBlock; i++) {
     const countMessage = getMessageCount(i);
-    console.log(iTmp);
 
     //Get messages for each name_times
     for (let j = 0; j < countMessage; j++) {
@@ -214,10 +185,7 @@ async function getDiffsBlockChanged(countBlock) {
 }
 
 async function getDiffsNoBlockChanged() {
-  console.log(iTmp - 1);
   const countMessage = getMessageCount(iTmp - 1);
-  console.log(countMessage);
-
   for (let j = jTmp; j < countMessage; j++) {
     await getMessageForEachNameAndTime(j);
   }
@@ -227,7 +195,6 @@ async function getMessageForEachNameAndTime(j) {
   const message = parseMessage(messageExecuteCount);
   await insertMessage(message, count);
   await animateMessages(count);
-  console.log(message);
   messageExecuteCount++;
   count++;
   jTmp = j + 1;
