@@ -6,7 +6,6 @@ function init() {
   chrome.storage.sync.get({ checked: false }, function (item) {
     fun.checked = item.checked;
     if (fun.checked) {
-      // soundListener(true);
     }
   });
 
@@ -14,7 +13,6 @@ function init() {
   toggle.addEventListener(
     "click",
     function () {
-      "hasittayo";
       fun.checked = !fun.checked;
       chrome.storage.sync.set({ checked: fun.checked });
       chrome.runtime.sendMessage({ type: "toggle", checked: fun.checked });
