@@ -11,13 +11,9 @@ let tabId,
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   tabId = sender.id;
   messageChecked = message.checked;
-  console.log("status:" + message.checked);
-  console.log("run");
   await init();
-  console.log("init");
   if (messageChecked == false) {
     firstFireFlag = true;
-    console.log("firstfireflagをtrueに戻したよ");
   }
   //Execute every 0.25 seconds
   let timerId = setInterval(async () => {
@@ -34,26 +30,18 @@ async function init() {
 }
 
 async function main(timerId, messageChecked) {
-  console.log("ちゃんと読まれてる" + messageChecked);
   const countBlock = getNumberOfBlocks();
-  console.log("countBlock:" + countBlock);
   const numberOfMessage = getNumberOfMessages();
-  console.log("numberOfMessage:" + numberOfMessage);
-  console.log("numberOfMessagePrevious:" + numberOfMessagePrevious);
-  console.log("main");
   if (messageChecked === false) {
     clearInterval(timerId);
-    console.log("clear");
   }
   if (firstFireFlag) {
     if (numberOfMessagePrevious + 1 == numberOfMessage) {
       firstFireFlag = false;
     }
-    console.log("stay");
     return;
   } else if (numberOfMessagePrevious < numberOfMessage) {
     await getDiff(countBlock, numberOfMessage);
-    console.log("getDiffが走ったで");
   }
 }
 //Get a block count that contains names and times, messages
@@ -133,17 +121,17 @@ async function animateMessages(count) {
   }, randomSpeed);
 }
 
-//Execute when there are diffs of blocks
+//Execute when there are number of diffs
 async function getDiff(countBlock, numberOfMessage) {
   const countMessage = getMessageCount(countBlock - 1);
   await getMessage(countMessage - 1, countBlock - 1);
   numberOfMessagePrevious = numberOfMessage;
 }
 
+//Implement of actual a get func
 async function getMessage(i, j) {
   const message = parseMessage(i, j);
   await insertMessage(message, count);
   await animateMessages(count);
-  console.log(message);
   count++;
 }
