@@ -103,7 +103,7 @@ async function insertMessage(message, count) {
 //Animate messages
 async function animateMessages(count) {
   var p = document.querySelector("#message" + count);
-  var randomSpeed = Math.floor(Math.random() * 10001) + 20000;
+  var randomSpeed = Math.floor(Math.random() * 10001) + 25000;
   p.animate(
     [
       // keyframes
