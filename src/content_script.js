@@ -5,12 +5,8 @@ let tabId,
   numberOfMessagePrevious = 0,
   countBlockPrevious = 0,
   messageExecuteCount = 0,
-  // iTmp = 0,
-  // jTmp = 0,
   count = 0,
-  // switchFlag,
   firstFireFlag = true;
-// firstFireAfterFlag = true;
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   tabId = sender.id;
@@ -39,11 +35,6 @@ async function init() {
 
 async function main(timerId, messageChecked) {
   console.log("ちゃんと読まれてる" + messageChecked);
-  // if (messageChecked) {
-  //   firstFireFlag = false;
-  // } else {
-  //   firstFireFlag = true;
-  // }
   const countBlock = getNumberOfBlocks();
   console.log("countBlock:" + countBlock);
   const numberOfMessage = getNumberOfMessages();
@@ -58,39 +49,12 @@ async function main(timerId, messageChecked) {
     if (numberOfMessagePrevious + 1 == numberOfMessage) {
       firstFireFlag = false;
     }
-    // messageExecuteCount = numberOfMessage;
     console.log("stay");
     return;
   } else if (numberOfMessagePrevious < numberOfMessage) {
-    await getDiffsBlockChanged2(countBlock, numberOfMessage);
-    console.log("getDiffsBlockChanged2が走ったで");
+    await getDiff(countBlock, numberOfMessage);
+    console.log("getDiffが走ったで");
   }
-  // else if (numberOfMessagePrevious <= numberOfMessage) {
-  //   //see if there are diffs of number of blocks
-  //   console.log("hoge");
-  //   if (firstFireAfterFlag && numberOfMessagePrevious + 1 == numberOfMessage) {
-  //     await getFirstMessageAfterFiredNoBlockChanged(
-  //       countBlock,
-  //       numberOfMessage
-  //     );
-  //     console.log("getFirstMessageAfterFiredNoBlockChangedが走ったで");
-  //     firstFireAfterFlag = false;
-  //   } else if (firstFireAfterFlag && countBlockPrevious + 1 == countBlock) {
-  //     await getFirstMessageAfterFiredBlockChanged(countBlock, numberOfMessage);
-  //     console.log("getFirstMessageAfterFiredBlockChangedが走ったで");
-  //     firstFireAfterFlag = false;
-  //   } else if (countBlockPrevious == countBlock) {
-  //     iTmp = countBlock;
-  //     //  countBlockPrevious = countBlock;
-  //     await getDiffsNoBlockChanged();
-  //     console.log("getDiffsNoBlockChangedが走ったで");
-  //     console.log(firstFireAfterFlag);
-  //   } else {
-  //     await getDiffsBlockChanged(countBlock);
-  //     console.log("getDiffsBlockChangedが走ったで");
-  //   }
-  //   numberOfMessagePrevious = numberOfMessage;
-  // }
 }
 //Get a block count that contains names and times, messages
 function getNumberOfBlocks() {
@@ -115,10 +79,7 @@ function getMessageCount(i) {
   }
   return contentLength;
 }
-// //Get Messages from "Google Meet Chat"
-// function parseMessage(i) {
-//   return document.getElementsByClassName("oIy2qc")[i].textContent;
-// }
+
 //Get Messages from "Google Meet Chat"
 function parseMessage(i, j) {
   var message = document.querySelector(
@@ -171,86 +132,18 @@ async function animateMessages(count) {
     p.parentNode.removeChild(p);
   }, randomSpeed);
 }
-// //Execute when gets first message after the firing
-// async function getFirstMessageAfterFiredBlockChanged(
-//   countBlock,
-//   numberOfMessage
-// ) {
-//   //Count messages to get start point
-//   for (let i = countBlock; i < countBlock + 1; i++) {
-//     console.log(i - 1);
-//     console.log(countBlock);
-//     //Get messages for each name_times
-//     for (let j = 0; j < 1; j++) {
-//       messageExecuteCount = numberOfMessage - 1;
-//       console.log(messageExecuteCount);
-//       await getMessageForEachNameAndTime(j);
-//     }
-//     iTmp = countBlock;
-//   }
-//   countBlockPrevious = countBlock;
-// }
-// async function getFirstMessageAfterFiredNoBlockChanged(
-//   countBlock,
-//   numberOfMessage
-// ) {
-//   // const countMessage = 1;
-//   for (let j = jTmp; j < 1; j++) {
-//     messageExecuteCount = numberOfMessage - 1;
-//     await getMessageForEachNameAndTime(j);
-//   }
-//   iTmp = countBlock;
-//   countBlockPrevious = countBlock;
-// }
-// //Execute when there are diffs of blocks
-// async function getDiffsBlockChanged(countBlock) {
-//   //Count messages to get start point
-//   for (let i = iTmp; i < countBlock; i++) {
-//     const countMessage = getMessageCount(i);
-//     console.log(iTmp);
-//     //Get messages for each name_times
-//     for (let j = 0; j < countMessage; j++) {
-//       await getMessageForEachNameAndTime(j);
-//     }
-//     iTmp = i + 1;
-//   }
-//   countBlockPrevious = countBlock;
-// }
-// async function getDiffsNoBlockChanged() {
-//   console.log(iTmp - 1);
-//   const countMessage = getMessageCount(iTmp - 1);
-//   console.log(countMessage);
-//   for (let j = jTmp; j < countMessage; j++) {
-//     await getMessageForEachNameAndTime(j);
-//   }
-// }
-
-// async function getDiffsNoBlockChanged2() {
-//     await getMessageForEachNameAndTime();
-// }
 
 //Execute when there are diffs of blocks
-async function getDiffsBlockChanged2(countBlock, numberOfMessage) {
-  //Count messages to get start point
-  // for (let i = iTmp; i < countBlock; i++) {
+async function getDiff(countBlock, numberOfMessage) {
   const countMessage = getMessageCount(countBlock - 1);
-  // console.log(iTmp);
-  //Get messages for each name_times
-  // for (let j = 0; j < countMessage; j++) {
-  await getMessageForEachNameAndTime(countMessage - 1, countBlock - 1);
-  // }
-  //   // iTmp = i + 1;
-  // }
+  await getMessage(countMessage - 1, countBlock - 1);
   numberOfMessagePrevious = numberOfMessage;
-  // countBlockPrevious = countBlock;
 }
 
-async function getMessageForEachNameAndTime(i, j) {
+async function getMessage(i, j) {
   const message = parseMessage(i, j);
   await insertMessage(message, count);
   await animateMessages(count);
   console.log(message);
-  // messageExecuteCount++;
   count++;
-  // jTmp = j + 1;
 }
