@@ -97,6 +97,8 @@ async function insertMessage(message, count) {
   p.style.zIndex = "1001";
   p.style.left = document.documentElement.clientWidth + "px";
   p.style.top = randomHight + "px";
+  p.style.textShadow =
+    "1px 1px black, -1px -1px black,1px -1px black, -1px 1px black,0px 1px black, 1px 0px black,-1px 0px black, 0px -1px black";
   p.appendChild(document.createTextNode(message));
   document.body.appendChild(p);
 }
