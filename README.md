@@ -11,4 +11,4 @@ Flow the chat like Niko video
 4. Click on load unpacked extension and select this cloned repo
 
 ## Licence
-This add-on may infringe on certain patents not explicitly, but we hope that all developers who visit this repository will have an open attitude towards OSS activities, so we are just making it public. Have a good developer life.
+This add-on may infringe on certain patents not explicitly, but we hope that all developers who visit this repository will have an open attitude towards OSS activities, so we are just making it public. Have a great developer life.
