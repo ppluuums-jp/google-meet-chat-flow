@@ -83,7 +83,7 @@ function parseMessage(i, j) {
 async function insertMessage(message, count) {
   var randomSize = Math.floor(Math.random() * 30) + 16; //16 to 45
   var randomHight = Math.round(
-    Math.random() * document.documentElement.clientHeight * 0.
+    Math.random() * document.documentElement.clientHeight * 0.85
   );
   var p = document.createElement("p");
   p.className = "messages";
