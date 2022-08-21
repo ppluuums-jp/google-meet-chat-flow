@@ -11,7 +11,6 @@ let tabId,
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   tabId = sender.id;
   messageChecked = message.checked;
-
   await init();
   if (messageChecked == false) {
     firstFireFlag = true;
@@ -84,7 +83,7 @@ function parseMessage(i, j) {
 async function insertMessage(message, count) {
   var randomSize = Math.floor(Math.random() * 30) + 16; //16 to 45
   var randomHight = Math.round(
-    Math.random() * document.documentElement.clientHeight * 0.9
+    Math.random() * document.documentElement.clientHeight * 0.
   );
   var p = document.createElement("p");
   p.className = "messages";
