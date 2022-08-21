@@ -11,6 +11,7 @@ let tabId,
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   tabId = sender.id;
   messageChecked = message.checked;
+
   await init();
   if (messageChecked == false) {
     firstFireFlag = true;
@@ -83,7 +84,7 @@ function parseMessage(i, j) {
 async function insertMessage(message, count) {
   var randomSize = Math.floor(Math.random() * 30) + 16; //16 to 45
   var randomHight = Math.round(
-    Math.random() * document.documentElement.clientHeight
+    Math.random() * document.documentElement.clientHeight * 0.9
   );
   var p = document.createElement("p");
   p.className = "messages";
@@ -102,15 +103,16 @@ async function insertMessage(message, count) {
   p.appendChild(document.createTextNode(message));
   document.body.appendChild(p);
 }
+
 //Animate messages
 async function animateMessages(count) {
   var p = document.querySelector("#message" + count);
-  var randomSpeed = Math.floor(Math.random() * 10001) + 25000;
+  var randomSpeed = Math.floor(Math.random() * 5000) + 7500;
   p.animate(
     [
       // keyframes
-      { transform: "translateX(100vw)" },
-      { transform: "translateX(-300vw)" },
+      { transform: "translateX(0vw)" },
+      { transform: "translateX("+-1*(document.documentElement.clientWidth+p.clientWidth)+"px)" },
     ],
     {
       // timing options
