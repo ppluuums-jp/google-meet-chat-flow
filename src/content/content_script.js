@@ -56,11 +56,11 @@ function getNumberOfMessages() {
 function getMessageCount(i) {
   if (i + 1 == 1) {
     var contentLength = document.querySelector(
-      "#ow3 > div.T4LgNb > div > div:nth-child(10) > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div > div.Zmm6We"
+      "#ow3 > div.T4LgNb > div > div:nth-child(11) > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div > div.Zmm6We"
     ).childElementCount;
   } else {
     var contentLength = document.querySelector(
-      "#ow3 > div.T4LgNb > div > div:nth-child(10) > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div:nth-child(" +
+      "#ow3 > div.T4LgNb > div > div:nth-child(11) > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div:nth-child(" +
         String(i + 1) +
         ") > div.Zmm6We"
     ).childElementCount;
@@ -71,7 +71,7 @@ function getMessageCount(i) {
 //Get Messages from "Google Meet Chat"
 function parseMessage(i, j) {
   var message = document.querySelector(
-    "#ow3 > div.T4LgNb > div > div:nth-child(10) > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div:nth-child(" +
+    "#ow3 > div.T4LgNb > div > div:nth-child(11) > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div:nth-child(" +
       String(j + 1) +
       ") > div.Zmm6We > div:nth-child(" +
       String(i + 1) +
@@ -111,7 +111,12 @@ async function animateMessages(count) {
     [
       // keyframes
       { transform: "translateX(0vw)" },
-      { transform: "translateX("+-1*(document.documentElement.clientWidth+p.clientWidth)+"px)" },
+      {
+        transform:
+          "translateX(" +
+          -1 * (document.documentElement.clientWidth + p.clientWidth) +
+          "px)",
+      },
     ],
     {
       // timing options
