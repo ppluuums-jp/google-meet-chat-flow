@@ -54,13 +54,14 @@ function getNumberOfMessages() {
 }
 //Get message counts which are included in each the blocks
 function getMessageCount(i) {
+  var index = checkIndex();
   if (i + 1 == 1) {
     var contentLength = document.querySelector(
-      "#ow3 > div.T4LgNb > div > div:nth-child(12) > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div > div.Zmm6We"
+      "#ow3 > div.T4LgNb > div > div:nth-child("+String(index)+") > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div > div.Zmm6We"
     ).childElementCount;
   } else {
     var contentLength = document.querySelector(
-      "#ow3 > div.T4LgNb > div > div:nth-child(12) > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div:nth-child(" +
+      "#ow3 > div.T4LgNb > div > div:nth-child("+String(index)+") > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div:nth-child(" +
         String(i + 1) +
         ") > div.Zmm6We"
     ).childElementCount;
@@ -70,8 +71,9 @@ function getMessageCount(i) {
 
 //Get Messages from "Google Meet Chat"
 function parseMessage(i, j) {
+  var index = checkIndex();
   var message = document.querySelector(
-    "#ow3 > div.T4LgNb > div > div:nth-child(12) > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div:nth-child(" +
+    "#ow3 > div.T4LgNb > div > div:nth-child("+String(index)+") > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div:nth-child(" +
       String(j + 1) +
       ") > div.Zmm6We > div:nth-child(" +
       String(i + 1) +
@@ -142,4 +144,18 @@ async function getMessage(i, j) {
   await insertMessage(message, count);
   await animateMessages(count);
   count++;
+}
+
+function checkIndex() {
+  let l;
+  for(let k=12; k < 20; k++) {
+    var jsPath = document.querySelector(
+      "#ow3 > div.T4LgNb > div > div:nth-child("+String(k)+") > div.crqnQb > div.R3Gmyc.qwU8Me > div.WUFI9b > div.hWX4r > div > div.z38b6 > div > div.Zmm6We"
+    );
+    if(!!jsPath){
+      l = k;
+      break
+    } 
+  }
+  return l;
 }
